@@ -1,53 +1,35 @@
-import {useState} from 'react';
-import logo from './assets/images/logo-universal.png';
-import './App.css';
-import {Greet} from "../wailsjs/go/main/App";
-import {ListDockerImages} from "../wailsjs/go/main/DockerCommandBindings";
-import { docker_commands } from '../wailsjs/go/models';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { SidebarProvider } from './components/ui/sidebar';
+import { TooltipProvider } from './components/ui/tooltip';
+import { ThemeProvider } from './components/ThemeProvider';
+import AppSidebar from './components/AppSidebar';
+import HomePage from './pages/HomePage';
+import HostPage from './pages/HostPage';
+import HostImagesPage from './pages/HostImagesPage';
+import ImageDetailPage from './pages/ImageDetailPage';
 
 function App() {
-    const [dockerImages, setDockerImages] = useState<docker_commands.DockerImage[]>([]);
-
-    async function listDockerImages() {
-        ListDockerImages()
-            .then(output => {
-                setDockerImages(output);
-            })
-            .catch(err => console.error(err));
-    
-    }
-
-    return (
-        <div id="App">
-            <div id="input" className="input-box">
-                <button className="btn" onClick={listDockerImages}>List Docker Images</button>
+  return (
+    <ThemeProvider>
+      <BrowserRouter>
+        <TooltipProvider>
+          <SidebarProvider>
+            <div className="flex w-full h-full">
+              <AppSidebar />
+              <main className="flex-1 overflow-auto">
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/:hostId/" element={<HostPage />} />
+                  <Route path="/:hostId/images" element={<HostImagesPage />} />
+                  <Route path="/:hostId/images/:imageId" element={<ImageDetailPage />} />
+                </Routes>
+              </main>
             </div>
-            <div id="result" className="result">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Image</th>
-                            <th>ID</th>
-                            <th>Disk Usage</th>
-                            <th>Content Size</th>
-                            <th>Extra</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {dockerImages.map((image, index) => (
-                            <tr key={index}>
-                                <td>{image.Image}</td>
-                                <td>{image.ID}</td>
-                                <td>{image.DiskUsage}</td>
-                                <td>{image.ContentSize}</td>
-                                <td>{image.Extra}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    )
+          </SidebarProvider>
+        </TooltipProvider>
+      </BrowserRouter>
+    </ThemeProvider>
+  );
 }
 
-export default App
+export default App;
