@@ -1,4 +1,4 @@
-import { Sun, Moon, Monitor, Check } from 'lucide-react';
+import { Sun, Moon, Monitor } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,18 +21,24 @@ export default function ThemeToggle() {
 
   return (
     <DropdownMenu>
-      <SidebarMenuButton render={<DropdownMenuTrigger />}>
+      <SidebarMenuButton
+        className="ml-auto size-8 w-8 justify-center p-0"
+        render={<DropdownMenuTrigger aria-label={`Theme: ${activeOption.label}`} title={activeOption.label} />}
+      >
         <ActiveIcon className="h-4 w-4" />
-        <span>{activeOption.label}</span>
       </SidebarMenuButton>
-      <DropdownMenuContent align="start" side="top">
+      <DropdownMenuContent align="end" side="top" className="flex w-auto min-w-0 gap-1 p-1.5">
         {OPTIONS.map((option) => {
           const Icon = option.icon;
           return (
-            <DropdownMenuItem key={option.value} onClick={() => setTheme(option.value)}>
-              <Icon className="h-4 w-4" />
-              <span>{option.label}</span>
-              {theme === option.value && <Check className="ml-auto h-4 w-4" />}
+            <DropdownMenuItem
+              key={option.value}
+              aria-label={option.label}
+              title={option.label}
+              className={`size-8 justify-center p-0 ${theme === option.value ? 'bg-accent text-accent-foreground' : ''}`}
+              onClick={() => setTheme(option.value)}
+            >
+              <Icon className="size-4" />
             </DropdownMenuItem>
           );
         })}

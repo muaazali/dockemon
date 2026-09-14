@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Layers, CircleDot, CirclePause } from 'lucide-react';
+import { Activity, CircleDot, CirclePause, Layers, Server, Zap } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { selectContainersStatus, selectProjectGroups, type ProjectGroup } from '@/store/selectors';
 import { fetchContainers } from '@/store/containersSlice';
@@ -59,16 +59,37 @@ export default function HomePage() {
     navigate(`/localhost/containers?projectId=${encodeURIComponent(projectId)}`);
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-semibold">Home Page</h1>
-      <p className="text-muted-foreground">Welcome to Dockemon</p>
+    <div className="mx-auto max-w-7xl p-6 lg:p-10">
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">Overview</p>
+          <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
+        </div>
+      </div>
+
+      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="rounded-xl border border-border bg-card/80 p-5 shadow-2xl shadow-black/10">
+          <div className="mb-6 flex items-center justify-between text-muted-foreground"><span className="text-xs">Projects</span><Layers className="size-4 text-primary" /></div>
+          <p className="text-3xl font-semibold">{projectGroups.length}</p><p className="mt-1 text-xs text-muted-foreground">Tracked workspaces</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card/80 p-5 shadow-2xl shadow-black/10">
+          <div className="mb-6 flex items-center justify-between text-muted-foreground"><span className="text-xs">Running containers</span><Activity className="size-4 text-emerald-400" /></div>
+          <p className="text-3xl font-semibold">{projectGroups.reduce((total, group) => total + group.runningCount, 0)}</p><p className="mt-1 text-xs text-muted-foreground">Healthy workloads</p>
+        </div>
+        <div className="rounded-xl border border-border bg-card/80 p-5 shadow-2xl shadow-black/10">
+          <div className="mb-6 flex items-center justify-between text-muted-foreground"><span className="text-xs">Host status</span><Zap className="size-4 text-amber-300" /></div>
+          <p className="text-3xl font-semibold">Ready</p><p className="mt-1 text-xs text-muted-foreground">localhost connected</p>
+        </div>
+      </div>
+
+      <div className="mb-4 flex items-center justify-between"><div><h2 className="text-lg font-semibold">Your projects</h2><p className="text-xs text-muted-foreground">Select a workspace to inspect its containers.</p></div><Server className="size-5 text-muted-foreground" /></div>
 
       {status === 'failed' ? (
         <div className="mt-6">
           <ErrorState onRetry={() => dispatch(fetchContainers())} />
         </div>
       ) : (
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {projectGroups.map((group) => (
             <ProjectCard key={group.projectId} group={group} onClick={handleNavigate} />
           ))}

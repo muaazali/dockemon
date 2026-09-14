@@ -120,20 +120,31 @@ export default function ContainersPage() {
   const status = useAppSelector(selectContainersStatus);
 
   return (
-    <div className="p-6">
+    <div className="mx-auto max-w-7xl p-6 lg:p-10">
       <BackButton />
-      <h1 className="text-2xl font-semibold">Containers</h1>
-      <p className="text-muted-foreground">
+      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">Workspace / Runtime</p>
+          <h1 className="text-3xl font-semibold tracking-tight">Containers</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
         Host: {hostId}
         {projectId ? ` · Project: ${projectId}` : ''}
-      </p>
+          </p>
+        </div>
+        <div className="rounded-full border border-border bg-card/70 px-3 py-2 text-xs text-muted-foreground">{filteredContainers.length} workloads</div>
+      </div>
 
       {status === 'failed' ? (
         <div className="mt-6">
           <ErrorState onRetry={() => dispatch(fetchContainers())} />
         </div>
+      ) : filteredContainers.length === 0 ? (
+        <div className="mt-6 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-16 text-center">
+          <Box className="h-8 w-8 text-muted-foreground" />
+          <p className="text-muted-foreground">No containers found.</p>
+        </div>
       ) : (
-        <div className="mt-6 grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           {filteredContainers.map((container) => (
             <ContainerCard key={container.ID} container={container} />
           ))}
