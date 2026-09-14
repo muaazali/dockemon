@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { GetDetailedDockerImagesData } from '../../wailsjs/go/bindings/DockerCommandBindings';
 import { models } from '../../wailsjs/go/models';
 import {
@@ -16,6 +17,7 @@ type ProjectGroup = {
 };
 
 export default function HomePage() {
+  const navigate = useNavigate();
   const [containers, setContainers] = useState<models.DockerContainerData[]>([]);
 
   useEffect(() => {
@@ -44,7 +46,13 @@ export default function HomePage() {
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {projectGroups.map((group) => (
-          <Card key={group.title}>
+          <Card
+            key={group.title}
+            className="cursor-pointer transition-colors hover:bg-muted/50"
+            onClick={() =>
+              navigate(`/localhost/containers?projectId=${encodeURIComponent(group.title)}`)
+            }
+          >
             <CardHeader>
               <CardTitle>{group.title}</CardTitle>
               <CardDescription>

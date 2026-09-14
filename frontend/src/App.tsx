@@ -7,6 +7,7 @@ import HomePage from './pages/HomePage';
 import HostPage from './pages/HostPage';
 import HostImagesPage from './pages/HostImagesPage';
 import ImageDetailPage from './pages/ImageDetailPage';
+import ContainersPage from './pages/ContainersPage';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
                   <Route path="/:hostId/" element={<HostPage />} />
                   <Route path="/:hostId/images" element={<HostImagesPage />} />
                   <Route path="/:hostId/images/:imageId" element={<ImageDetailPage />} />
+                  <Route path="/:hostId/containers" element={<ContainersPage />} />
                 </Routes>
               </main>
             </div>
