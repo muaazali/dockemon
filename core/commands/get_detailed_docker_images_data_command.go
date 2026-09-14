@@ -9,10 +9,24 @@ import (
 )
 
 func GetDetailedDockerImagesData() ([]models.DockerContainerData, error) {
-	// cmd := exec.Command("docker", "inspect $(docker images -q) --format=json")
-	cmd := exec.Command("powershell", "-Command", "docker inspect $(docker ps -a -q) --format=json")
+	psCmd := exec.Command("powershell", "-Command", "docker ps -a -q")
 
-	log.Println("Executing: docker inspect $(docker ps -a -q) --format=json")
+	log.Println("Executing: docker ps -a -q")
+
+	psOut, err := psCmd.Output()
+	if err != nil {
+		log.Print("Error executing docker ps: ", err.Error())
+		return nil, err
+	}
+
+	containerIDs := strings.Fields(string(psOut))
+	if len(containerIDs) == 0 {
+		return []models.DockerContainerData{}, nil
+	}
+
+	cmd := exec.Command("docker", append([]string{"inspect", "--format=json"}, containerIDs...)...)
+
+	log.Println("Executing: docker inspect --format=json", strings.Join(containerIDs, " "))
 
 	stdout, err := cmd.Output()
 	if err != nil {

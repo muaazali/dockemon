@@ -4,8 +4,10 @@ import { Box, Cpu, HardDrive, MemoryStick, Network, Activity } from 'lucide-reac
 import { models } from '../../wailsjs/go/models';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import BackButton from '@/components/BackButton';
-import { useAppSelector } from '@/store/hooks';
-import { selectContainersByProject } from '@/store/selectors';
+import ErrorState from '@/components/ErrorState';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { fetchContainers } from '@/store/containersSlice';
+import { selectContainersByProject, selectContainersStatus } from '@/store/selectors';
 
 const ContainerCard = memo(function ContainerCard({
   container,
@@ -79,7 +81,9 @@ export default function ContainersPage() {
   const { hostId } = useParams<{ hostId: string }>();
   const [searchParams] = useSearchParams();
   const projectId = searchParams.get('projectId');
+  const dispatch = useAppDispatch();
   const filteredContainers = useAppSelector((state) => selectContainersByProject(state, projectId));
+  const status = useAppSelector(selectContainersStatus);
 
   return (
     <div className="p-6">
@@ -90,11 +94,17 @@ export default function ContainersPage() {
         {projectId ? ` · Project: ${projectId}` : ''}
       </p>
 
-      <div className="mt-6 grid grid-cols-1 gap-4">
-        {filteredContainers.map((container) => (
-          <ContainerCard key={container.ID} container={container} />
-        ))}
-      </div>
+      {status === 'failed' ? (
+        <div className="mt-6">
+          <ErrorState onRetry={() => dispatch(fetchContainers())} />
+        </div>
+      ) : (
+        <div className="mt-6 grid grid-cols-1 gap-4">
+          {filteredContainers.map((container) => (
+            <ContainerCard key={container.ID} container={container} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

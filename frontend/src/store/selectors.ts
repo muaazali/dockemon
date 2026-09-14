@@ -1,5 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from './store';
+import { models } from '../../wailsjs/go/models';
 
 const selectContainersState = (state: RootState) => state.containers;
 
@@ -18,14 +19,20 @@ export const selectContainersError = createSelector(
   (containers) => containers.error
 );
 
+// Containers without a compose project are treated as their own project, identified by container name
+function getEffectiveProjectId(container: models.DockerContainerData): string {
+  return container.ComposeProjectTitle || container.RepoTitle;
+}
+
 export const selectContainersByProject = createSelector(
   [selectAllContainers, (_state: RootState, projectId: string | null) => projectId],
   (containers, projectId) =>
-    projectId ? containers.filter((container) => container.ComposeProjectTitle === projectId) : containers
+    projectId ? containers.filter((container) => getEffectiveProjectId(container) === projectId) : containers
 );
 
 export type ProjectGroup = {
   title: string;
+  projectId: string;
   imageCount: number;
   runningCount: number;
   stoppedCount: number;
@@ -34,15 +41,16 @@ export type ProjectGroup = {
 export const selectProjectGroups = createSelector([selectAllContainers], (containers) => {
   const groups = new Map<string, { imageCount: number; runningCount: number }>();
   for (const container of containers) {
-    const title = container.ComposeProjectTitle || 'Untitled';
-    const existing = groups.get(title) ?? { imageCount: 0, runningCount: 0 };
-    groups.set(title, {
+    const projectId = getEffectiveProjectId(container);
+    const existing = groups.get(projectId) ?? { imageCount: 0, runningCount: 0 };
+    groups.set(projectId, {
       imageCount: existing.imageCount + 1,
       runningCount: existing.runningCount + (container.IsRunning ? 1 : 0),
     });
   }
-  return Array.from(groups.entries()).map(([title, { imageCount, runningCount }]) => ({
-    title,
+  return Array.from(groups.entries()).map(([projectId, { imageCount, runningCount }]) => ({
+    title: projectId,
+    projectId,
     imageCount,
     runningCount,
     stoppedCount: imageCount - runningCount,
