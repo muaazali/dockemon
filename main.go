@@ -6,6 +6,8 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+
+	"dockemon/core/bindings"
 )
 
 //go:embed all:frontend/dist
@@ -14,7 +16,7 @@ var assets embed.FS
 func main() {
 	// Create an instance of the app structure
 	app := NewApp()
-	dockerCommandBindings := &DockerCommandBindings{}
+	dockerCommandBindings := &bindings.DockerCommandBindings{}
 
 	// Create application with options
 	err := wails.Run(&options.App{

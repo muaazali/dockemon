@@ -1,13 +1,14 @@
 package docker_commands
 
 import (
+	"dockemon/core/models"
 	"fmt"
 	"log"
 	"os/exec"
 	"strings"
 )
 
-func ListActiveDockerImages() ([]DockerImage, error) {
+func ListActiveDockerImages() ([]models.DockerImage, error) {
 	cmd := exec.Command("docker", "ps")
 
 	stdout, err := cmd.Output()
@@ -17,13 +18,13 @@ func ListActiveDockerImages() ([]DockerImage, error) {
 
 	outputString := string(stdout)
 
-	dockerImages := []DockerImage{}
+	dockerImages := []models.DockerImage{}
 	for _, line := range strings.Split(outputString, "\n")[1:] {
 		if len(line) == 0 {
 			continue
 		} 
 
-		var image DockerImage
+		var image models.DockerImage
 		_, err := fmt.Sscanf(line, "%s %s %s %s %s %s", &image.Image, &image.ID, &image.DiskUsage, &image.ContentSize, &image.Extra)
 		if err != nil && err.Error() != "EOF" {
 			log.Println(err.Error())
