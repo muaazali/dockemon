@@ -9,6 +9,14 @@ export namespace models {
 	    Created: any;
 	    Size: number;
 	    ComposeProjectTitle: string;
+	    ImageType: string;
+	    IsRunning: boolean;
+	    CPUPercentage: string;
+	    MemoryUsage: string;
+	    MemoryPercentage: string;
+	    NetworkIO: string;
+	    BlockIO: string;
+	    PIDs: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new DockerContainerData(source);
@@ -23,6 +31,14 @@ export namespace models {
 	        this.Created = this.convertValues(source["Created"], null);
 	        this.Size = source["Size"];
 	        this.ComposeProjectTitle = source["ComposeProjectTitle"];
+	        this.ImageType = source["ImageType"];
+	        this.IsRunning = source["IsRunning"];
+	        this.CPUPercentage = source["CPUPercentage"];
+	        this.MemoryUsage = source["MemoryUsage"];
+	        this.MemoryPercentage = source["MemoryPercentage"];
+	        this.NetworkIO = source["NetworkIO"];
+	        this.BlockIO = source["BlockIO"];
+	        this.PIDs = source["PIDs"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Layers, CircleDot, CirclePause } from 'lucide-react';
 import { GetDetailedDockerImagesData } from '../../wailsjs/go/bindings/DockerCommandBindings';
 import { models } from '../../wailsjs/go/models';
 import {
@@ -13,7 +14,8 @@ import {
 type ProjectGroup = {
   title: string;
   imageCount: number;
-  isRunning: boolean;
+  runningCount: number;
+  stoppedCount: number;
 };
 
 export default function HomePage() {
@@ -27,15 +29,20 @@ export default function HomePage() {
   }, []);
 
   const projectGroups = useMemo<ProjectGroup[]>(() => {
-    const groups = new Map<string, number>();
+    const groups = new Map<string, { imageCount: number; runningCount: number }>();
     for (const container of containers) {
       const title = container.ComposeProjectTitle || 'Untitled';
-      groups.set(title, (groups.get(title) ?? 0) + 1);
+      const existing = groups.get(title) ?? { imageCount: 0, runningCount: 0 };
+      groups.set(title, {
+        imageCount: existing.imageCount + 1,
+        runningCount: existing.runningCount + (container.IsRunning ? 1 : 0),
+      });
     }
-    return Array.from(groups.entries()).map(([title, imageCount]) => ({
+    return Array.from(groups.entries()).map(([title, { imageCount, runningCount }]) => ({
       title,
       imageCount,
-      isRunning: true, // TODO: derive from actual container status
+      runningCount,
+      stoppedCount: imageCount - runningCount,
     }));
   }, [containers]);
 
@@ -54,19 +61,24 @@ export default function HomePage() {
             }
           >
             <CardHeader>
-              <CardTitle>{group.title}</CardTitle>
+              <div className="flex items-center gap-2">
+                <Layers className="h-4 w-4 text-muted-foreground" />
+                <CardTitle>{group.title}</CardTitle>
+              </div>
               <CardDescription>
                 {group.imageCount} {group.imageCount === 1 ? 'image' : 'images'}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-2 text-sm">
-                <span
-                  className={`h-2 w-2 rounded-full ${
-                    group.isRunning ? 'bg-green-500' : 'bg-muted-foreground'
-                  }`}
-                />
-                <span>{group.isRunning ? 'Running' : 'Stopped'}</span>
+              <div className="flex items-center gap-4 text-sm">
+                <div className="flex items-center gap-1.5">
+                  <CircleDot className="h-4 w-4 text-green-500" />
+                  <span>{group.runningCount} running</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <CirclePause className="h-4 w-4 text-muted-foreground" />
+                  <span>{group.stoppedCount} stopped</span>
+                </div>
               </div>
             </CardContent>
           </Card>
