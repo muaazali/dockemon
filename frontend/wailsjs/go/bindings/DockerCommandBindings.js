@@ -9,3 +9,15 @@ export function GetDetailedDockerImagesData() {
 export function ListDockerImages() {
   return window['go']['bindings']['DockerCommandBindings']['ListDockerImages']();
 }
+
+export function RestartDockerContainer(arg1) {
+  return window['go']['bindings']['DockerCommandBindings']['RestartDockerContainer'](arg1);
+}
+
+export function StartDockerContainer(arg1) {
+  return window['go']['bindings']['DockerCommandBindings']['StartDockerContainer'](arg1);
+}
+
+export function StopDockerContainer(arg1) {
+  return window['go']['bindings']['DockerCommandBindings']['StopDockerContainer'](arg1);
+}

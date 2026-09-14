@@ -5,3 +5,9 @@ import {models} from '../models';
 export function GetDetailedDockerImagesData():Promise<Array<models.DockerContainerData>>;
 
 export function ListDockerImages():Promise<Array<models.DockerImage>>;
+
+export function RestartDockerContainer(arg1:string):Promise<boolean>;
+
+export function StartDockerContainer(arg1:string):Promise<boolean>;
+
+export function StopDockerContainer(arg1:string):Promise<boolean>;

@@ -19,6 +19,11 @@ export const selectContainersError = createSelector(
   (containers) => containers.error
 );
 
+export const selectContainerPendingAction = createSelector(
+  [selectContainersState, (_state: RootState, containerId: string) => containerId],
+  (containers, containerId) => containers.pendingActions[containerId]
+);
+
 // Containers without a compose project are treated as their own project, identified by container name
 function getEffectiveProjectId(container: models.DockerContainerData): string {
   return container.ComposeProjectTitle || container.RepoTitle;

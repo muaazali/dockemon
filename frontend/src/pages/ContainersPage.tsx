@@ -1,19 +1,24 @@
 import { memo } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { Box, Cpu, HardDrive, MemoryStick, Network, Activity } from 'lucide-react';
+import { Box, Cpu, HardDrive, MemoryStick, Network, Activity, Play, Square, RotateCw } from 'lucide-react';
 import { models } from '../../wailsjs/go/models';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import BackButton from '@/components/BackButton';
 import ErrorState from '@/components/ErrorState';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { fetchContainers } from '@/store/containersSlice';
-import { selectContainersByProject, selectContainersStatus } from '@/store/selectors';
+import { fetchContainers, startContainer, stopContainer, restartContainer } from '@/store/containersSlice';
+import { selectContainersByProject, selectContainersStatus, selectContainerPendingAction } from '@/store/selectors';
 
 const ContainerCard = memo(function ContainerCard({
   container,
 }: {
   container: models.DockerContainerData;
 }) {
+  const dispatch = useAppDispatch();
+  const pendingAction = useAppSelector((state) => selectContainerPendingAction(state, container.ID));
+  const isLocked = pendingAction !== undefined;
+
   return (
     <Card>
       <CardHeader>
@@ -22,23 +27,52 @@ const ContainerCard = memo(function ContainerCard({
             <Box className="h-4 w-4 text-muted-foreground" />
             <CardTitle>{container.RepoTitle}</CardTitle>
           </div>
-          <span
-            className={`flex items-center gap-1.5 text-xs font-medium ${
-              container.IsRunning ? 'text-green-500' : 'text-muted-foreground'
-            }`}
-          >
+          <div className="flex items-center gap-3">
             <span
-              className={`h-2 w-2 rounded-full ${
-                container.IsRunning ? 'bg-green-500' : 'bg-muted-foreground'
+              className={`flex items-center gap-1.5 text-xs font-medium ${
+                container.IsRunning ? 'text-green-500' : 'text-muted-foreground'
               }`}
-            />
-            {container.IsRunning ? 'Running' : 'Stopped'}
-          </span>
+            >
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  container.IsRunning ? 'bg-green-500' : 'bg-muted-foreground'
+                }`}
+              />
+              {container.IsRunning ? 'Running' : 'Stopped'}
+            </span>
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="outline"
+                size="icon-sm"
+                disabled={isLocked || container.IsRunning}
+                onClick={() => dispatch(startContainer(container.ID))}
+              >
+                <Play className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon-sm"
+                disabled={isLocked || !container.IsRunning}
+                onClick={() => dispatch(stopContainer(container.ID))}
+              >
+                <Square className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon-sm"
+                disabled={isLocked}
+                onClick={() => dispatch(restartContainer(container.ID))}
+              >
+                <RotateCw className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
         </div>
         <CardDescription>
           {container.ImageType} · {container.RepoTag}
         </CardDescription>
       </CardHeader>
+
       <CardContent>
         <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted-foreground">
           <span>ID: {container.ID.slice(0, 12)}</span>

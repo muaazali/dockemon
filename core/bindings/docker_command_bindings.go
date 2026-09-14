@@ -30,3 +30,33 @@ func (d *DockerCommandBindings) GetDetailedDockerImagesData() []models.DockerCon
 	}
 	return data
 }
+
+func (d *DockerCommandBindings) StartDockerContainer(containerID string) bool {
+	err := docker_commands.StartDockerContainer(containerID)
+	if err != nil {
+		log.Println("Unable to start docker container!")
+		log.Println(err.Error())
+		return false
+	}
+	return true
+}
+
+func (d *DockerCommandBindings) StopDockerContainer(containerID string) bool {
+	err := docker_commands.StopDockerContainer(containerID)
+	if err != nil {
+		log.Println("Unable to stop docker container!")
+		log.Println(err.Error())
+		return false
+	}
+	return true
+}
+
+func (d *DockerCommandBindings) RestartDockerContainer(containerID string) bool {
+	err := docker_commands.RestartDockerContainer(containerID)
+	if err != nil {
+		log.Println("Unable to restart docker container!")
+		log.Println(err.Error())
+		return false
+	}
+	return true
+}
