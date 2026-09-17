@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Box, Cpu, HardDrive, MemoryStick, Network, Activity, Play, Square, RotateCw } from 'lucide-react';
 import { models } from '../../wailsjs/go/models';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -16,11 +16,16 @@ const ContainerCard = memo(function ContainerCard({
   container: models.DockerContainerData;
 }) {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const { hostId } = useParams<{ hostId: string }>();
   const pendingAction = useAppSelector((state) => selectContainerPendingAction(state, container.ID));
   const isLocked = pendingAction !== undefined;
 
   return (
-    <Card>
+    <Card
+      className="cursor-pointer transition-colors hover:border-primary/50"
+      onClick={() => navigate(`/${hostId}/containers/${container.ID}`)}
+    >
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -40,7 +45,7 @@ const ContainerCard = memo(function ContainerCard({
               />
               {container.IsRunning ? 'Running' : 'Stopped'}
             </span>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
               <Button
                 variant="outline"
                 size="icon-sm"

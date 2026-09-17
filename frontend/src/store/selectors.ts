@@ -24,6 +24,11 @@ export const selectContainerPendingAction = createSelector(
   (containers, containerId) => containers.pendingActions[containerId]
 );
 
+export const selectContainerById = createSelector(
+  [selectContainersState, (_state: RootState, containerId: string | undefined) => containerId],
+  (containers, containerId) => (containerId ? containers.byId[containerId] : undefined)
+);
+
 // Containers without a compose project are treated as their own project, identified by container name
 function getEffectiveProjectId(container: models.DockerContainerData): string {
   return container.ComposeProjectTitle || container.RepoTitle;

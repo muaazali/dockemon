@@ -8,6 +8,7 @@ import HostPage from './pages/HostPage';
 import HostImagesPage from './pages/HostImagesPage';
 import ImageDetailPage from './pages/ImageDetailPage';
 import ContainersPage from './pages/ContainersPage';
+import ContainerDetailPage from './pages/ContainerDetailPage';
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
                   <Route path="/:hostId/images" element={<HostImagesPage />} />
                   <Route path="/:hostId/images/:imageId" element={<ImageDetailPage />} />
                   <Route path="/:hostId/containers" element={<ContainersPage />} />
+                  <Route path="/:hostId/containers/:containerId" element={<ContainerDetailPage />} />
                 </Routes>
               </main>
             </div>
