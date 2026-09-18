@@ -1,40 +1,39 @@
 package docker_commands
 
 import (
+	"dockemon/core/commandbuilder"
 	"dockemon/core/models"
 	"encoding/json"
 	"log"
-	"os/exec"
 	"strings"
 )
 
-func GetDetailedDockerImagesData() ([]models.DockerContainerData, error) {
-	psCmd := exec.Command("powershell", "-Command", "docker ps -a -q")
+func GetDetailedDockerImagesData(hostId ...string) ([]models.DockerContainerData, error) {
+	cb := commandbuilder.NewCommandBuilder(hostId...)
 
 	log.Println("Executing: docker ps -a -q")
 
-	psOut, err := psCmd.Output()
+	psOut, err := cb.Execute("docker ps -a -q")
 	if err != nil {
 		log.Print("Error executing docker ps: ", err.Error())
 		return nil, err
 	}
 
-	containerIDs := strings.Fields(string(psOut))
+	containerIDs := strings.Fields(psOut)
 	if len(containerIDs) == 0 {
 		return []models.DockerContainerData{}, nil
 	}
 
-	cmd := exec.Command("docker", append([]string{"inspect", "--format=json"}, containerIDs...)...)
+	inspectCmd := "docker inspect --format=json " + strings.Join(containerIDs, " ")
 
-	log.Println("Executing: docker inspect --format=json", strings.Join(containerIDs, " "))
+	log.Println("Executing:", inspectCmd)
 
-	stdout, err := cmd.Output()
+	outputString, err := cb.Execute(inspectCmd)
 	if err != nil {
 		log.Print("Error executing docker inspect: ", err.Error())
 		return nil, err
 	}
 
-	outputString := string(stdout)
 	log.Println(outputString)
 
 	dockerImagesDetailed := []models.DockerContainerDataDetailed{}
@@ -45,7 +44,7 @@ func GetDetailedDockerImagesData() ([]models.DockerContainerData, error) {
 		return nil, err
 	}
 
-	return combineWithStats(convertToSimpleDockerContainerData(dockerImagesDetailed)), nil
+	return combineWithStats(cb, convertToSimpleDockerContainerData(dockerImagesDetailed)), nil
 }
 
 func convertToSimpleDockerContainerData(dockerContainersDetailed []models.DockerContainerDataDetailed) []models.DockerContainerData {
@@ -64,18 +63,15 @@ func convertToSimpleDockerContainerData(dockerContainersDetailed []models.Docker
 	return converted
 }
 
-func combineWithStats(dockerContainers []models.DockerContainerData) []models.DockerContainerData {
-	cmd := exec.Command("powershell", "-Command", "docker stats --no-trunc --no-stream --format=json")
-
+func combineWithStats(cb *commandbuilder.CommandBuilder, dockerContainers []models.DockerContainerData) []models.DockerContainerData {
 	log.Println("Executing: docker stats --no-trunc --no-stream --format=json")
 
-	stdout, err := cmd.Output()
+	outputString, err := cb.Execute("docker stats --no-trunc --no-stream --format=json")
 	if err != nil {
 		log.Print("Error executing docker stats: ", err.Error())
 		return dockerContainers
 	}
 
-	outputString := string(stdout)
 	log.Println(outputString)
 
 	statsOutputStrings := strings.Split(outputString, "\n")

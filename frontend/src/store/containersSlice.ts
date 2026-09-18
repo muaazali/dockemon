@@ -28,21 +28,21 @@ const initialState: ContainersState = {
 };
 
 export const fetchContainers = createAsyncThunk('containers/fetch', async () => {
-  return GetDetailedDockerImagesData();
+  return GetDetailedDockerImagesData("");
 });
 
 export const startContainer = createAsyncThunk('containers/start', async (containerId: string) => {
-  const success = await StartDockerContainer(containerId);
+  const success = await StartDockerContainer(containerId, "");
   return { containerId, success };
 });
 
 export const stopContainer = createAsyncThunk('containers/stop', async (containerId: string) => {
-  const success = await StopDockerContainer(containerId);
+  const success = await StopDockerContainer(containerId, "");
   return { containerId, success };
 });
 
 export const restartContainer = createAsyncThunk('containers/restart', async (containerId: string) => {
-  const success = await RestartDockerContainer(containerId);
+  const success = await RestartDockerContainer(containerId, "");
   return { containerId, success };
 });
 

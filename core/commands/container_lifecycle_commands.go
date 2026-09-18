@@ -1,16 +1,16 @@
 package docker_commands
 
 import (
+	"dockemon/core/commandbuilder"
 	"log"
-	"os/exec"
 )
 
-func StartDockerContainer(containerID string) error {
-	cmd := exec.Command("docker", "start", containerID)
+func StartDockerContainer(containerID string, hostId ...string) error {
+	cb := commandbuilder.NewCommandBuilder(hostId...)
 
 	log.Println("Executing: docker start", containerID)
 
-	_, err := cmd.Output()
+	_, err := cb.Execute("docker start " + containerID)
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -19,12 +19,12 @@ func StartDockerContainer(containerID string) error {
 	return nil
 }
 
-func StopDockerContainer(containerID string) error {
-	cmd := exec.Command("docker", "stop", containerID)
+func StopDockerContainer(containerID string, hostId ...string) error {
+	cb := commandbuilder.NewCommandBuilder(hostId...)
 
 	log.Println("Executing: docker stop", containerID)
 
-	_, err := cmd.Output()
+	_, err := cb.Execute("docker stop " + containerID)
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -33,12 +33,12 @@ func StopDockerContainer(containerID string) error {
 	return nil
 }
 
-func RestartDockerContainer(containerID string) error {
-	cmd := exec.Command("docker", "restart", containerID)
+func RestartDockerContainer(containerID string, hostId ...string) error {
+	cb := commandbuilder.NewCommandBuilder(hostId...)
 
 	log.Println("Executing: docker restart", containerID)
 
-	_, err := cmd.Output()
+	_, err := cb.Execute("docker restart " + containerID)
 	if err != nil {
 		log.Println(err.Error())
 		return err
