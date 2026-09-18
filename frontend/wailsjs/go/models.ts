@@ -79,6 +79,28 @@ export namespace models {
 	        this.Extra = source["Extra"];
 	    }
 	}
+	export class Host {
+	    ID: string;
+	    Name: string;
+	    Address: string;
+	    Port: number;
+	    User: string;
+	    PrivateKeyPath: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Host(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.ID = source["ID"];
+	        this.Name = source["Name"];
+	        this.Address = source["Address"];
+	        this.Port = source["Port"];
+	        this.User = source["User"];
+	        this.PrivateKeyPath = source["PrivateKeyPath"];
+	    }
+	}
 
 }
 

@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Cpu, HardDrive, MemoryStick, Network, Activity, Play, Square, RotateCw } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -7,34 +6,29 @@ import BackButton from '@/components/BackButton';
 import ErrorState from '@/components/ErrorState';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { fetchContainers, startContainer, stopContainer, restartContainer } from '@/store/containersSlice';
-import { selectContainerById, selectContainerPendingAction, selectContainersStatus } from '@/store/selectors';
+import { selectContainerById, selectContainerPendingAction, selectHostContainersStatus } from '@/store/selectors';
 
 export default function ContainerDetailPage() {
   const { hostId, containerId } = useParams<{ hostId: string; containerId: string }>();
+  const resolvedHostId = hostId ?? 'localhost';
   const dispatch = useAppDispatch();
-  const container = useAppSelector((state) => selectContainerById(state, containerId));
-  const status = useAppSelector(selectContainersStatus);
-  const pendingAction = useAppSelector((state) => selectContainerPendingAction(state, containerId ?? ''));
+  const container = useAppSelector((state) => selectContainerById(state, resolvedHostId, containerId));
+  const status = useAppSelector((state) => selectHostContainersStatus(state, resolvedHostId));
+  const pendingAction = useAppSelector((state) => selectContainerPendingAction(state, resolvedHostId, containerId ?? ''));
   const isLocked = pendingAction !== undefined;
-
-  useEffect(() => {
-    if (status === 'idle') {
-      dispatch(fetchContainers());
-    }
-  }, [status, dispatch]);
 
   if (status === 'failed') {
     return (
-      <div className="mx-auto max-w-4xl p-6 lg:p-10">
+      <div className="mx-auto max-w-7xl p-6 lg:p-10">
         <BackButton />
-        <ErrorState onRetry={() => dispatch(fetchContainers())} />
+        <ErrorState onRetry={() => dispatch(fetchContainers(resolvedHostId))} />
       </div>
     );
   }
 
   if (!container) {
     return (
-      <div className="mx-auto max-w-4xl p-6 lg:p-10">
+      <div className="mx-auto max-w-7xl p-6 lg:p-10">
         <BackButton />
         <div className="mt-6 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-16 text-center">
           <Box className="h-8 w-8 text-muted-foreground" />
@@ -47,7 +41,7 @@ export default function ContainerDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl p-6 lg:p-10">
+    <div className="mx-auto max-w-7xl p-6 lg:p-10">
       <BackButton />
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
@@ -84,7 +78,7 @@ export default function ContainerDetailPage() {
                   variant="outline"
                   size="icon-sm"
                   disabled={isLocked || container.IsRunning}
-                  onClick={() => dispatch(startContainer(container.ID))}
+                  onClick={() => dispatch(startContainer({ containerId: container.ID, hostId: resolvedHostId }))}
                 >
                   <Play className="h-3.5 w-3.5" />
                 </Button>
@@ -92,7 +86,7 @@ export default function ContainerDetailPage() {
                   variant="outline"
                   size="icon-sm"
                   disabled={isLocked || !container.IsRunning}
-                  onClick={() => dispatch(stopContainer(container.ID))}
+                  onClick={() => dispatch(stopContainer({ containerId: container.ID, hostId: resolvedHostId }))}
                 >
                   <Square className="h-3.5 w-3.5" />
                 </Button>
@@ -100,7 +94,7 @@ export default function ContainerDetailPage() {
                   variant="outline"
                   size="icon-sm"
                   disabled={isLocked}
-                  onClick={() => dispatch(restartContainer(container.ID))}
+                  onClick={() => dispatch(restartContainer({ containerId: container.ID, hostId: resolvedHostId }))}
                 >
                   <RotateCw className="h-3.5 w-3.5" />
                 </Button>

@@ -1,8 +1,9 @@
-import { memo } from 'react';
+import { memo, useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Activity, CircleDot, CirclePause, Layers, Server, Zap } from 'lucide-react';
+import { CircleDot, CirclePause, Plus, Server } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { selectContainersStatus, selectProjectGroups, type ProjectGroup } from '@/store/selectors';
+import { selectAllHosts, selectHostSummary, selectHostsStatus } from '@/store/selectors';
+import { addHost, fetchHosts } from '@/store/hostsSlice';
 import { fetchContainers } from '@/store/containersSlice';
 import ErrorState from '@/components/ErrorState';
 import {
@@ -12,36 +13,50 @@ import {
   CardDescription,
   CardContent,
 } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Sheet,
+  SheetTrigger,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetFooter,
+} from '@/components/ui/sheet';
+import { models } from '../../wailsjs/go/models';
 
-type ProjectCardProps = {
-  group: ProjectGroup;
-  onClick: (projectId: string) => void;
+type HostCardProps = {
+  host: models.Host;
+  onClick: (hostId: string) => void;
 };
 
-const ProjectCard = memo(function ProjectCard({ group, onClick }: ProjectCardProps) {
+const HostCard = memo(function HostCard({ host, onClick }: HostCardProps) {
+  const summary = useAppSelector((state) => selectHostSummary(state, host.ID));
+
   return (
     <Card
       className="cursor-pointer transition-colors hover:bg-muted/50"
-      onClick={() => onClick(group.projectId)}
+      onClick={() => onClick(host.ID)}
     >
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Layers className="h-4 w-4 text-muted-foreground" />
-          <CardTitle>{group.title}</CardTitle>
+          <Server className="h-4 w-4 text-muted-foreground" />
+          <CardTitle>{host.Name || host.ID}</CardTitle>
         </div>
         <CardDescription>
-          {group.imageCount} {group.imageCount === 1 ? 'image' : 'images'}
+          {host.ID === 'localhost' ? 'This machine' : `${host.User}@${host.Address}:${host.Port}`}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex items-center gap-4 text-sm">
           <div className="flex items-center gap-1.5">
             <CircleDot className="h-4 w-4 text-green-500" />
-            <span>{group.runningCount} running</span>
+            <span>{summary.running} running</span>
           </div>
           <div className="flex items-center gap-1.5">
             <CirclePause className="h-4 w-4 text-muted-foreground" />
-            <span>{group.stoppedCount} stopped</span>
+            <span>{summary.total - summary.running} stopped</span>
           </div>
         </div>
       </CardContent>
@@ -49,49 +64,116 @@ const ProjectCard = memo(function ProjectCard({ group, onClick }: ProjectCardPro
   );
 });
 
+function AddHostForm({ onDone }: { onDone: () => void }) {
+  const dispatch = useAppDispatch();
+  const [form, setForm] = useState({
+    id: '',
+    name: '',
+    address: '',
+    port: '22',
+    user: '',
+    privateKeyPath: '',
+  });
+
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    const result = await dispatch(
+      addHost({
+        ID: form.id,
+        Name: form.name,
+        Address: form.address,
+        Port: Number(form.port) || 22,
+        User: form.user,
+        PrivateKeyPath: form.privateKeyPath,
+      })
+    );
+    if (addHost.fulfilled.match(result)) {
+      dispatch(fetchContainers(result.payload.ID));
+    }
+    onDone();
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-4 overflow-auto px-4">
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-medium text-muted-foreground" htmlFor="host-id">Host ID</label>
+        <Input id="host-id" required value={form.id} onChange={(e) => setForm({ ...form, id: e.target.value })} placeholder="prod-server" />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-medium text-muted-foreground" htmlFor="host-name">Name</label>
+        <Input id="host-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Production server" />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-medium text-muted-foreground" htmlFor="host-address">Address</label>
+        <Input id="host-address" required value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="192.168.1.10" />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-medium text-muted-foreground" htmlFor="host-port">Port</label>
+        <Input id="host-port" type="number" value={form.port} onChange={(e) => setForm({ ...form, port: e.target.value })} />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-medium text-muted-foreground" htmlFor="host-user">SSH user</label>
+        <Input id="host-user" required value={form.user} onChange={(e) => setForm({ ...form, user: e.target.value })} placeholder="root" />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <label className="text-xs font-medium text-muted-foreground" htmlFor="host-key">Private key path</label>
+        <Input id="host-key" required value={form.privateKeyPath} onChange={(e) => setForm({ ...form, privateKeyPath: e.target.value })} placeholder="~/.ssh/id_rsa" />
+      </div>
+      <SheetFooter>
+        <Button type="submit">Save host</Button>
+      </SheetFooter>
+    </form>
+  );
+}
+
 export default function HomePage() {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const projectGroups = useAppSelector(selectProjectGroups);
-  const status = useAppSelector(selectContainersStatus);
+  const hosts = useAppSelector(selectAllHosts);
+  const status = useAppSelector(selectHostsStatus);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
-  const handleNavigate = (projectId: string) =>
-    navigate(`/localhost/containers?projectId=${encodeURIComponent(projectId)}`);
+  useEffect(() => {
+    dispatch(fetchHosts());
+  }, [dispatch]);
+
+  const handleNavigate = (hostId: string) => navigate(`/${hostId}/`);
 
   return (
     <div className="mx-auto max-w-7xl p-6 lg:p-10">
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">Overview</p>
-          <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Hosts</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Select a host to inspect its containers and images.</p>
         </div>
+        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+          <SheetTrigger
+            render={
+              <Button>
+                <Plus className="h-4 w-4" />
+                Add host
+              </Button>
+            }
+          />
+          <SheetContent>
+            <SheetHeader>
+              <SheetTitle>Add a host</SheetTitle>
+              <SheetDescription>Connect to a remote Docker host over SSH using a private key.</SheetDescription>
+            </SheetHeader>
+            <AddHostForm onDone={() => setSheetOpen(false)} />
+          </SheetContent>
+        </Sheet>
       </div>
-
-      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-border bg-card/80 p-5 shadow-2xl shadow-black/10">
-          <div className="mb-6 flex items-center justify-between text-muted-foreground"><span className="text-xs">Projects</span><Layers className="size-4 text-primary" /></div>
-          <p className="text-3xl font-semibold">{projectGroups.length}</p><p className="mt-1 text-xs text-muted-foreground">Tracked workspaces</p>
-        </div>
-        <div className="rounded-xl border border-border bg-card/80 p-5 shadow-2xl shadow-black/10">
-          <div className="mb-6 flex items-center justify-between text-muted-foreground"><span className="text-xs">Running containers</span><Activity className="size-4 text-emerald-400" /></div>
-          <p className="text-3xl font-semibold">{projectGroups.reduce((total, group) => total + group.runningCount, 0)}</p><p className="mt-1 text-xs text-muted-foreground">Healthy workloads</p>
-        </div>
-        <div className="rounded-xl border border-border bg-card/80 p-5 shadow-2xl shadow-black/10">
-          <div className="mb-6 flex items-center justify-between text-muted-foreground"><span className="text-xs">Host status</span><Zap className="size-4 text-amber-300" /></div>
-          <p className="text-3xl font-semibold">Ready</p><p className="mt-1 text-xs text-muted-foreground">localhost connected</p>
-        </div>
-      </div>
-
-      <div className="mb-4 flex items-center justify-between"><div><h2 className="text-lg font-semibold">Your projects</h2><p className="text-xs text-muted-foreground">Select a workspace to inspect its containers.</p></div><Server className="size-5 text-muted-foreground" /></div>
 
       {status === 'failed' ? (
         <div className="mt-6">
-          <ErrorState onRetry={() => dispatch(fetchContainers())} />
+          <ErrorState onRetry={() => dispatch(fetchHosts())} />
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {projectGroups.map((group) => (
-            <ProjectCard key={group.projectId} group={group} onClick={handleNavigate} />
+          {hosts.map((host) => (
+            <HostCard key={host.ID} host={host} onClick={handleNavigate} />
           ))}
         </div>
       )}

@@ -17,6 +17,7 @@ func main() {
 	// Create an instance of the app structure
 	app := NewApp()
 	dockerCommandBindings := &bindings.DockerCommandBindings{}
+	hostBindings := &bindings.HostBindings{}
 
 	// Create application with options
 	err := wails.Run(&options.App{
@@ -31,6 +32,7 @@ func main() {
 		Bind: []interface{}{
 			app,
 			dockerCommandBindings,
+			hostBindings,
 		},
 	})
 

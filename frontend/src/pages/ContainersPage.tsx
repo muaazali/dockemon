@@ -8,7 +8,7 @@ import BackButton from '@/components/BackButton';
 import ErrorState from '@/components/ErrorState';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { fetchContainers, startContainer, stopContainer, restartContainer } from '@/store/containersSlice';
-import { selectContainersByProject, selectContainersStatus, selectContainerPendingAction } from '@/store/selectors';
+import { selectContainersByProject, selectHostContainersStatus, selectContainerPendingAction } from '@/store/selectors';
 
 const ContainerCard = memo(function ContainerCard({
   container,
@@ -18,7 +18,8 @@ const ContainerCard = memo(function ContainerCard({
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { hostId } = useParams<{ hostId: string }>();
-  const pendingAction = useAppSelector((state) => selectContainerPendingAction(state, container.ID));
+  const resolvedHostId = hostId ?? 'localhost';
+  const pendingAction = useAppSelector((state) => selectContainerPendingAction(state, resolvedHostId, container.ID));
   const isLocked = pendingAction !== undefined;
 
   return (
@@ -50,7 +51,7 @@ const ContainerCard = memo(function ContainerCard({
                 variant="outline"
                 size="icon-sm"
                 disabled={isLocked || container.IsRunning}
-                onClick={() => dispatch(startContainer(container.ID))}
+                onClick={() => dispatch(startContainer({ containerId: container.ID, hostId: resolvedHostId }))}
               >
                 <Play className="h-3.5 w-3.5" />
               </Button>
@@ -58,7 +59,7 @@ const ContainerCard = memo(function ContainerCard({
                 variant="outline"
                 size="icon-sm"
                 disabled={isLocked || !container.IsRunning}
-                onClick={() => dispatch(stopContainer(container.ID))}
+                onClick={() => dispatch(stopContainer({ containerId: container.ID, hostId: resolvedHostId }))}
               >
                 <Square className="h-3.5 w-3.5" />
               </Button>
@@ -66,7 +67,7 @@ const ContainerCard = memo(function ContainerCard({
                 variant="outline"
                 size="icon-sm"
                 disabled={isLocked}
-                onClick={() => dispatch(restartContainer(container.ID))}
+                onClick={() => dispatch(restartContainer({ containerId: container.ID, hostId: resolvedHostId }))}
               >
                 <RotateCw className="h-3.5 w-3.5" />
               </Button>
@@ -118,11 +119,12 @@ const ContainerCard = memo(function ContainerCard({
 
 export default function ContainersPage() {
   const { hostId } = useParams<{ hostId: string }>();
+  const resolvedHostId = hostId ?? 'localhost';
   const [searchParams] = useSearchParams();
   const projectId = searchParams.get('projectId');
   const dispatch = useAppDispatch();
-  const filteredContainers = useAppSelector((state) => selectContainersByProject(state, projectId));
-  const status = useAppSelector(selectContainersStatus);
+  const filteredContainers = useAppSelector((state) => selectContainersByProject(state, resolvedHostId, projectId));
+  const status = useAppSelector((state) => selectHostContainersStatus(state, resolvedHostId));
 
   return (
     <div className="mx-auto max-w-7xl p-6 lg:p-10">
@@ -141,7 +143,7 @@ export default function ContainersPage() {
 
       {status === 'failed' ? (
         <div className="mt-6">
-          <ErrorState onRetry={() => dispatch(fetchContainers())} />
+          <ErrorState onRetry={() => dispatch(fetchContainers(resolvedHostId))} />
         </div>
       ) : filteredContainers.length === 0 ? (
         <div className="mt-6 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-16 text-center">

@@ -34,8 +34,6 @@ func GetDetailedDockerImagesData(hostId ...string) ([]models.DockerContainerData
 		return nil, err
 	}
 
-	log.Println(outputString)
-
 	dockerImagesDetailed := []models.DockerContainerDataDetailed{}
 
 	err = json.Unmarshal([]byte(outputString), &dockerImagesDetailed)
@@ -71,8 +69,6 @@ func combineWithStats(cb *commandbuilder.CommandBuilder, dockerContainers []mode
 		log.Print("Error executing docker stats: ", err.Error())
 		return dockerContainers
 	}
-
-	log.Println(outputString)
 
 	statsOutputStrings := strings.Split(outputString, "\n")
 

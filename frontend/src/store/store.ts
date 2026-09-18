@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 import containersReducer from './containersSlice';
+import hostsReducer from './hostsSlice';
 
 export const store = configureStore({
   reducer: {
     containers: containersReducer,
+    hosts: hostsReducer,
   },
 });
 
