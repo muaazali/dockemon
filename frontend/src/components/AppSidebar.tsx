@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Gauge, Server, Settings2, Sparkles } from 'lucide-react';
+import { Gauge, Server, Sparkles } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -28,7 +28,7 @@ export default function AppSidebar() {
   return (
     <Sidebar
       collapsible="none"
-      className="my-3 rounded-2xl border border-sidebar-border shadow-xl shadow-black/20"
+      className="h-auto rounded-xl border border-sidebar-border shadow-xl shadow-black/20"
     >
       <SidebarContent>
         <SidebarGroup>
@@ -36,10 +36,7 @@ export default function AppSidebar() {
             <div className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground shadow-lg shadow-primary/25">
               <DockemonLogo className="size-7" />
             </div>
-            <div>
-              <p className="text-sm font-semibold tracking-tight text-sidebar-foreground">Dockemon</p>
-              <p className="text-[10px] uppercase tracking-[0.18em] text-sidebar-foreground/50">Control center</p>
-            </div>
+            <p className="text-base font-semibold tracking-tight text-sidebar-foreground">Dockemon</p>
           </div>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -77,18 +74,6 @@ export default function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup className="mt-auto">
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton>
-                  <Settings2 className="h-4 w-4" />
-                  <span>Settings</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

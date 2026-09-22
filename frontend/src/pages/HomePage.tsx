@@ -140,7 +140,7 @@ export default function HomePage() {
   const handleNavigate = (hostId: string) => navigate(`/${hostId}/`);
 
   return (
-    <div className="mx-auto max-w-7xl p-6 lg:p-10">
+    <div className="mx-auto max-w-7xl px-6 pb-6 lg:px-10 lg:pb-10">
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4 rounded-2xl border border-border bg-card/60 px-6 py-5 shadow-lg shadow-black/10 backdrop-blur-2xl">
         <div>
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">Overview</p>

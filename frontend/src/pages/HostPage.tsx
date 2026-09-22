@@ -62,7 +62,7 @@ export default function HostPage() {
     navigate(`/${hostId}/containers?projectId=${encodeURIComponent(projectId)}`);
 
   return (
-    <div className="mx-auto max-w-7xl p-6 lg:p-10">
+    <div className="mx-auto max-w-7xl px-6 pb-6 lg:px-10 lg:pb-10">
       <BackButton />
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4 rounded-2xl border border-border bg-card/60 px-6 py-5 shadow-lg shadow-black/10 backdrop-blur-2xl">
         <div>
