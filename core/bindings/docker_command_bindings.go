@@ -60,3 +60,13 @@ func (d *DockerCommandBindings) RestartDockerContainer(containerID string, hostI
 	}
 	return true
 }
+
+func (d *DockerCommandBindings) GetContainerLogs(containerID string, hostId string, tail int) string {
+	logs, err := docker_commands.GetContainerLogs(containerID, tail, hostId)
+	if err != nil {
+		log.Println("Unable to fetch container logs!")
+		log.Println(err.Error())
+		return ""
+	}
+	return logs
+}

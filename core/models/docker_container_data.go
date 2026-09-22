@@ -137,19 +137,8 @@ type DockerContainerDataDetailed struct {
 		Image      string      `json:"Image"`
 		Volumes    interface{} `json:"Volumes"`
 		WorkingDir string      `json:"WorkingDir"`
-		Entrypoint []string    `json:"Entrypoint"`
-		Labels     struct {
-			ComDockerComposeConfigHash         string `json:"com.docker.compose.config-hash"`
-			ComDockerComposeContainerNumber    string `json:"com.docker.compose.container-number"`
-			ComDockerComposeDependsOn          string `json:"com.docker.compose.depends_on"`
-			ComDockerComposeImage              string `json:"com.docker.compose.image"`
-			ComDockerComposeOneoff             string `json:"com.docker.compose.oneoff"`
-			ComDockerComposeProject            string `json:"com.docker.compose.project"`
-			ComDockerComposeProjectConfigFiles string `json:"com.docker.compose.project.config_files"`
-			ComDockerComposeProjectWorkingDir  string `json:"com.docker.compose.project.working_dir"`
-			ComDockerComposeService            string `json:"com.docker.compose.service"`
-			ComDockerComposeVersion            string `json:"com.docker.compose.version"`
-		} `json:"Labels"`
+		Entrypoint []string          `json:"Entrypoint"`
+		Labels     map[string]string `json:"Labels"`
 		StopTimeout int `json:"StopTimeout"`
 	} `json:"Config"`
 	NetworkSettings struct {
@@ -208,6 +197,8 @@ type DockerContainerData struct {
 	NetworkIO			string
 	BlockIO				string
 	PIDs				string
+	Labels				map[string]string
+	Env					[]string
 }
 
 type DockerStatsInternal struct {

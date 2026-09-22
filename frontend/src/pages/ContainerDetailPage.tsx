@@ -1,12 +1,28 @@
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Box, Cpu, HardDrive, MemoryStick, Network, Activity, Play, Square, RotateCw } from 'lucide-react';
+import { Box, Play, Square, RotateCw, ChevronDown, Tag, FileCode2 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTab, TabsPanel } from '@/components/ui/tabs';
+import { Collapsible, CollapsibleTrigger, CollapsiblePanel } from '@/components/ui/collapsible';
 import BackButton from '@/components/BackButton';
 import ErrorState from '@/components/ErrorState';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { fetchContainers, startContainer, stopContainer, restartContainer } from '@/store/containersSlice';
 import { selectContainerById, selectContainerPendingAction, selectHostContainersStatus } from '@/store/selectors';
+import { GetContainerLogs } from '../../wailsjs/go/bindings/DockerCommandBindings';
+
+const LOGS_POLL_INTERVAL_MS = 1000;
+const TAIL_OPTIONS = [10, 50, 100] as const;
+
+function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-4 border-b border-border/60 py-2 text-sm last:border-b-0">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="truncate text-right font-medium">{value}</span>
+    </div>
+  );
+}
 
 export default function ContainerDetailPage() {
   const { hostId, containerId } = useParams<{ hostId: string; containerId: string }>();
@@ -16,6 +32,46 @@ export default function ContainerDetailPage() {
   const status = useAppSelector((state) => selectHostContainersStatus(state, resolvedHostId));
   const pendingAction = useAppSelector((state) => selectContainerPendingAction(state, resolvedHostId, containerId ?? ''));
   const isLocked = pendingAction !== undefined;
+
+  const [tailLines, setTailLines] = useState<number>(50);
+  const [logs, setLogs] = useState('');
+  const [logsError, setLogsError] = useState<string | null>(null);
+  const logsRequestId = useRef(0);
+
+  const isRunning = container?.IsRunning ?? false;
+
+  useEffect(() => {
+    if (!containerId || !isRunning) {
+      setLogs('');
+      setLogsError(null);
+      return;
+    }
+
+    let cancelled = false;
+    const requestId = ++logsRequestId.current;
+
+    const fetchLogs = async () => {
+      try {
+        const result = await GetContainerLogs(containerId, resolvedHostId, tailLines);
+        if (!cancelled && logsRequestId.current === requestId) {
+          setLogs(result);
+          setLogsError(null);
+        }
+      } catch (err) {
+        if (!cancelled && logsRequestId.current === requestId) {
+          setLogsError(err instanceof Error ? err.message : 'Failed to fetch container logs');
+        }
+      }
+    };
+
+    fetchLogs();
+    const intervalId = setInterval(fetchLogs, LOGS_POLL_INTERVAL_MS);
+
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+    };
+  }, [containerId, resolvedHostId, isRunning, tailLines]);
 
   if (status === 'failed') {
     return (
@@ -58,90 +114,163 @@ export default function ContainerDetailPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Box className="h-4 w-4 text-muted-foreground" />
-              <CardTitle>{container.RepoTitle}</CardTitle>
+              <CardTitle>Actions</CardTitle>
             </div>
-            <div className="flex items-center gap-3">
+            <span
+              className={`flex items-center gap-1.5 text-xs font-medium ${
+                container.IsRunning ? 'text-green-500' : 'text-muted-foreground'
+              }`}
+            >
               <span
-                className={`flex items-center gap-1.5 text-xs font-medium ${
-                  container.IsRunning ? 'text-green-500' : 'text-muted-foreground'
+                className={`h-2 w-2 rounded-full ${
+                  container.IsRunning ? 'bg-green-500' : 'bg-muted-foreground'
                 }`}
-              >
-                <span
-                  className={`h-2 w-2 rounded-full ${
-                    container.IsRunning ? 'bg-green-500' : 'bg-muted-foreground'
-                  }`}
-                />
-                {container.IsRunning ? 'Running' : 'Stopped'}
-              </span>
-              <div className="flex items-center gap-1.5">
-                <Button
-                  variant="outline"
-                  size="icon-sm"
-                  disabled={isLocked || container.IsRunning}
-                  onClick={() => dispatch(startContainer({ containerId: container.ID, hostId: resolvedHostId }))}
-                >
-                  <Play className="h-3.5 w-3.5" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon-sm"
-                  disabled={isLocked || !container.IsRunning}
-                  onClick={() => dispatch(stopContainer({ containerId: container.ID, hostId: resolvedHostId }))}
-                >
-                  <Square className="h-3.5 w-3.5" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon-sm"
-                  disabled={isLocked}
-                  onClick={() => dispatch(restartContainer({ containerId: container.ID, hostId: resolvedHostId }))}
-                >
-                  <RotateCw className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            </div>
+              />
+              {container.IsRunning ? 'Running' : 'Stopped'}
+            </span>
           </div>
+        </CardHeader>
+
+        <CardContent>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              disabled={isLocked || container.IsRunning}
+              onClick={() => dispatch(startContainer({ containerId: container.ID, hostId: resolvedHostId }))}
+            >
+              <Play className="h-3.5 w-3.5" />
+              Start
+            </Button>
+            <Button
+              variant="outline"
+              disabled={isLocked || !container.IsRunning}
+              onClick={() => dispatch(stopContainer({ containerId: container.ID, hostId: resolvedHostId }))}
+            >
+              <Square className="h-3.5 w-3.5" />
+              Stop
+            </Button>
+            <Button
+              variant="outline"
+              disabled={isLocked}
+              onClick={() => dispatch(restartContainer({ containerId: container.ID, hostId: resolvedHostId }))}
+            >
+              <RotateCw className="h-3.5 w-3.5" />
+              Restart
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Details</CardTitle>
           <CardDescription>
             {container.ImageType} · {container.RepoTag}
           </CardDescription>
         </CardHeader>
 
         <CardContent>
-          <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted-foreground">
-            <span>ID: {container.ID}</span>
-            <span>Project: {container.ComposeProjectTitle}</span>
-            <span>Size: {container.Size}</span>
-            <span>Comment: {container.Comment}</span>
-          </div>
-
+          <DetailRow label="ID" value={container.ID} />
+          <DetailRow label="Project" value={container.ComposeProjectTitle || '—'} />
+          <DetailRow label="Size" value={container.Size} />
+          <DetailRow label="Comment" value={container.Comment || '—'} />
           {container.IsRunning && (
-            <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-4">
-              <div className="flex items-center gap-2">
-                <Cpu className="h-4 w-4 text-muted-foreground" />
-                <span>{container.CPUPercentage}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <MemoryStick className="h-4 w-4 text-muted-foreground" />
-                <span>
-                  {container.MemoryUsage} ({container.MemoryPercentage})
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Network className="h-4 w-4 text-muted-foreground" />
-                <span>{container.NetworkIO}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <HardDrive className="h-4 w-4 text-muted-foreground" />
-                <span>{container.BlockIO}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Activity className="h-4 w-4 text-muted-foreground" />
-                <span>{container.PIDs} PIDs</span>
-              </div>
-            </div>
+            <>
+              <DetailRow label="CPU" value={container.CPUPercentage} />
+              <DetailRow label="Memory" value={`${container.MemoryUsage} (${container.MemoryPercentage})`} />
+              <DetailRow label="Network I/O" value={container.NetworkIO} />
+              <DetailRow label="Block I/O" value={container.BlockIO} />
+              <DetailRow label="PIDs" value={container.PIDs} />
+            </>
           )}
+
+          <Tabs defaultValue="logs" className="mt-6">
+            <div className="flex items-center justify-between">
+              <TabsList>
+                <TabsTab value="logs">Logs</TabsTab>
+              </TabsList>
+              {isRunning && (
+                <select
+                  className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                  value={tailLines}
+                  onChange={(e) => setTailLines(Number(e.target.value))}
+                >
+                  {TAIL_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      Last {option} lines
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            <TabsPanel value="logs" className="mt-3">
+              {!isRunning ? (
+                <p className="text-sm text-muted-foreground">Start the container to view live logs.</p>
+              ) : logsError ? (
+                <p className="text-sm text-destructive">{logsError}</p>
+              ) : (
+                <pre className="max-h-96 overflow-auto rounded-lg border border-border bg-black/30 p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap text-foreground">
+                  {logs || 'No logs yet.'}
+                </pre>
+              )}
+            </TabsPanel>
+          </Tabs>
         </CardContent>
       </Card>
+
+      <Collapsible defaultOpen className="mt-6">
+        <Card className="overflow-hidden">
+          <CollapsibleTrigger className="w-full">
+            <CardHeader className="flex-row items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Tag className="h-4 w-4 text-muted-foreground" />
+                <CardTitle>Labels</CardTitle>
+              </div>
+              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[panel-open]:rotate-180" />
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsiblePanel>
+            <CardContent>
+              {Object.keys(container.Labels ?? {}).length === 0 ? (
+                <p className="text-sm text-muted-foreground">No labels.</p>
+              ) : (
+                Object.entries(container.Labels).map(([key, value]) => (
+                  <DetailRow key={key} label={key} value={value} />
+                ))
+              )}
+            </CardContent>
+          </CollapsiblePanel>
+        </Card>
+      </Collapsible>
+
+      <Collapsible defaultOpen className="mt-6">
+        <Card className="overflow-hidden">
+          <CollapsibleTrigger className="w-full">
+            <CardHeader className="flex-row items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileCode2 className="h-4 w-4 text-muted-foreground" />
+                <CardTitle>Environment</CardTitle>
+              </div>
+              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[panel-open]:rotate-180" />
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsiblePanel>
+            <CardContent>
+              {(container.Env ?? []).length === 0 ? (
+                <p className="text-sm text-muted-foreground">No environment variables.</p>
+              ) : (
+                container.Env.map((entry) => {
+                  const separatorIndex = entry.indexOf('=');
+                  const key = separatorIndex === -1 ? entry : entry.slice(0, separatorIndex);
+                  const value = separatorIndex === -1 ? '' : entry.slice(separatorIndex + 1);
+                  return <DetailRow key={key} label={key} value={value} />;
+                })
+              )}
+            </CardContent>
+          </CollapsiblePanel>
+        </Card>
+      </Collapsible>
     </div>
   );
 }

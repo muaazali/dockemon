@@ -53,9 +53,11 @@ func convertToSimpleDockerContainerData(dockerContainersDetailed []models.Docker
 			RepoTitle:           strings.TrimPrefix(container.Name, "/"),
 			Created:             container.Created,
 			Size:                container.HostConfig.ShmSize,
-			ComposeProjectTitle: container.Config.Labels.ComDockerComposeProject,
+			ComposeProjectTitle: container.Config.Labels["com.docker.compose.project"],
 			IsRunning:             container.State.Running,
 			ImageType:				container.Config.Image,
+			Labels:				container.Config.Labels,
+			Env:					container.Config.Env,
 		})
 	}
 	return converted

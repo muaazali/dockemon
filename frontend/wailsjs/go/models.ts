@@ -17,6 +17,8 @@ export namespace models {
 	    NetworkIO: string;
 	    BlockIO: string;
 	    PIDs: string;
+	    Labels: Record<string, string>;
+	    Env: string[];
 	
 	    static createFrom(source: any = {}) {
 	        return new DockerContainerData(source);
@@ -39,6 +41,8 @@ export namespace models {
 	        this.NetworkIO = source["NetworkIO"];
 	        this.BlockIO = source["BlockIO"];
 	        this.PIDs = source["PIDs"];
+	        this.Labels = source["Labels"];
+	        this.Env = source["Env"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
