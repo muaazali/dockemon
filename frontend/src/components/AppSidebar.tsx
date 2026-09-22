@@ -4,14 +4,12 @@ import { Gauge, Server, Settings2, Sparkles } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import ThemeToggle from '@/components/ThemeToggle';
 import DockemonLogo from '@/components/DockemonLogo';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { selectAllHosts } from '@/store/selectors';
@@ -28,7 +26,10 @@ export default function AppSidebar() {
   }, [dispatch]);
 
   return (
-    <Sidebar collapsible="none" className="border-sidebar-border">
+    <Sidebar
+      collapsible="none"
+      className="my-3 rounded-2xl border border-sidebar-border shadow-xl shadow-black/20"
+    >
       <SidebarContent>
         <SidebarGroup>
           <div className="mb-7 flex items-center gap-3 px-2 pt-2">
@@ -92,15 +93,6 @@ export default function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <div className="flex justify-end rounded-lg border border-sidebar-border bg-sidebar-accent/40 px-3 py-2">
-              <ThemeToggle />
-            </div>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
     </Sidebar>
   );
 }

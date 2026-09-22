@@ -129,7 +129,7 @@ export default function ContainersPage() {
   return (
     <div className="mx-auto max-w-7xl p-6 lg:p-10">
       <BackButton />
-      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4 rounded-2xl border border-border bg-card/60 px-6 py-5 shadow-lg shadow-black/10 backdrop-blur-2xl">
         <div>
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">Workspace / Runtime</p>
           <h1 className="text-3xl font-semibold tracking-tight">Containers</h1>
@@ -138,7 +138,7 @@ export default function ContainersPage() {
         {projectId ? ` · Project: ${projectId}` : ''}
           </p>
         </div>
-        <div className="rounded-full border border-border bg-card/70 px-3 py-2 text-xs text-muted-foreground">{filteredContainers.length} workloads</div>
+        <div className="rounded-full border border-border bg-secondary px-3 py-2 text-xs text-muted-foreground">{filteredContainers.length} workloads</div>
       </div>
 
       {status === 'failed' ? (
@@ -146,7 +146,7 @@ export default function ContainersPage() {
           <ErrorState onRetry={() => dispatch(fetchContainers(resolvedHostId))} />
         </div>
       ) : filteredContainers.length === 0 ? (
-        <div className="mt-6 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-16 text-center">
+        <div className="mt-6 flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-card/50 py-16 text-center backdrop-blur-2xl">
           <Box className="h-8 w-8 text-muted-foreground" />
           <p className="text-muted-foreground">No containers found.</p>
         </div>

@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { SidebarProvider } from './components/ui/sidebar';
 import { TooltipProvider } from './components/ui/tooltip';
-import { ThemeProvider } from './components/ThemeProvider';
 import AppSidebar from './components/AppSidebar';
+import TitleBar from './components/TitleBar';
 import HomePage from './pages/HomePage';
 import HostPage from './pages/HostPage';
 import HostImagesPage from './pages/HostImagesPage';
@@ -12,13 +12,14 @@ import ContainerDetailPage from './pages/ContainerDetailPage';
 
 function App() {
   return (
-    <ThemeProvider>
-      <BrowserRouter>
-        <TooltipProvider>
-          <SidebarProvider>
-            <div className="flex w-full h-full">
+    <BrowserRouter>
+      <TooltipProvider>
+        <SidebarProvider>
+          <div className="flex h-full w-full flex-col overflow-hidden">
+            <TitleBar />
+            <div className="flex min-h-0 flex-1 gap-3 overflow-hidden px-3 pb-3">
               <AppSidebar />
-              <main className="flex-1 overflow-auto">
+              <main className="min-h-0 flex-1 overflow-auto">
                 <Routes>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/:hostId/" element={<HostPage />} />
@@ -29,10 +30,10 @@ function App() {
                 </Routes>
               </main>
             </div>
-          </SidebarProvider>
-        </TooltipProvider>
-      </BrowserRouter>
-    </ThemeProvider>
+          </div>
+        </SidebarProvider>
+      </TooltipProvider>
+    </BrowserRouter>
   );
 }
 

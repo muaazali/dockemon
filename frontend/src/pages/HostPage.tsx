@@ -64,7 +64,7 @@ export default function HostPage() {
   return (
     <div className="mx-auto max-w-7xl p-6 lg:p-10">
       <BackButton />
-      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4 rounded-2xl border border-border bg-card/60 px-6 py-5 shadow-lg shadow-black/10 backdrop-blur-2xl">
         <div>
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">Overview</p>
           <h1 className="text-3xl font-semibold tracking-tight">{hostId}</h1>
@@ -86,7 +86,7 @@ export default function HostPage() {
         </div>
       </div>
 
-      <div className="mb-4 flex items-center justify-between"><div><h2 className="text-lg font-semibold">Your projects</h2><p className="text-xs text-muted-foreground">Select a workspace to inspect its containers.</p></div><Server className="size-5 text-muted-foreground" /></div>
+      <div className="mb-4 flex items-center justify-between rounded-2xl border border-border bg-card/60 px-5 py-4 shadow-lg shadow-black/10 backdrop-blur-2xl"><div><h2 className="text-lg font-semibold">Your projects</h2><p className="text-xs text-muted-foreground">Select a workspace to inspect its containers.</p></div><Server className="size-5 text-muted-foreground" /></div>
 
       {status === 'failed' ? (
         <div className="mt-6">

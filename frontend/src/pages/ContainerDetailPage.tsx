@@ -30,7 +30,7 @@ export default function ContainerDetailPage() {
     return (
       <div className="mx-auto max-w-7xl p-6 lg:p-10">
         <BackButton />
-        <div className="mt-6 flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed py-16 text-center">
+        <div className="mt-6 flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-card/50 py-16 text-center backdrop-blur-2xl">
           <Box className="h-8 w-8 text-muted-foreground" />
           <p className="text-muted-foreground">
             {status === 'loading' ? 'Loading container…' : 'Container not found.'}
@@ -43,7 +43,7 @@ export default function ContainerDetailPage() {
   return (
     <div className="mx-auto max-w-7xl p-6 lg:p-10">
       <BackButton />
-      <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-4 rounded-2xl border border-border bg-card/60 px-6 py-5 shadow-lg shadow-black/10 backdrop-blur-2xl">
         <div>
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
             {hostId} / Containers
