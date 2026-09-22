@@ -1,6 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from './store';
 import type { HostContainersState } from './containersSlice';
+import type { HostStatsHistory } from './hostStatsSlice';
 import { models } from '../../wailsjs/go/models';
 
 const selectContainersState = (state: RootState) => state.containers;
@@ -108,3 +109,17 @@ export const selectHostSummary = createSelector([selectContainersByHost], (conta
   total: containers.length,
   running: containers.filter((container) => container.IsRunning).length,
 }));
+
+const selectHostStatsState = (state: RootState) => state.hostStats;
+
+export const selectHostStats = createSelector(
+  [selectHostStatsState, (_state: RootState, hostId: string) => hostId],
+  (hostStats, hostId) => hostStats.byHostId[hostId]?.stats ?? null
+);
+
+const EMPTY_HISTORY: HostStatsHistory = { cpu: [], memory: [] };
+
+export const selectHostStatsHistory = createSelector(
+  [selectHostStatsState, (_state: RootState, hostId: string) => hostId],
+  (hostStats, hostId) => hostStats.byHostId[hostId]?.history ?? EMPTY_HISTORY
+);

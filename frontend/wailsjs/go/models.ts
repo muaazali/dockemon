@@ -101,6 +101,50 @@ export namespace models {
 	        this.PrivateKeyPath = source["PrivateKeyPath"];
 	    }
 	}
+	export class HostStats {
+	    Timestamp: string;
+	    CPUUsagePercent: number;
+	    CPUCoreCount: number;
+	    CPULoadAvg1Min: number;
+	    CPULoadAvg5Min: number;
+	    CPULoadAvg15Min: number;
+	    MemoryTotalMB: number;
+	    MemoryUsedMB: number;
+	    MemoryFreeMB: number;
+	    MemoryUsedPercent: number;
+	    SwapTotalMB: number;
+	    SwapUsedMB: number;
+	    SwapFreeMB: number;
+	    StorageTotalMB: number;
+	    StorageUsedMB: number;
+	    StorageFreeMB: number;
+	    StorageUsedPercent: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new HostStats(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.Timestamp = source["Timestamp"];
+	        this.CPUUsagePercent = source["CPUUsagePercent"];
+	        this.CPUCoreCount = source["CPUCoreCount"];
+	        this.CPULoadAvg1Min = source["CPULoadAvg1Min"];
+	        this.CPULoadAvg5Min = source["CPULoadAvg5Min"];
+	        this.CPULoadAvg15Min = source["CPULoadAvg15Min"];
+	        this.MemoryTotalMB = source["MemoryTotalMB"];
+	        this.MemoryUsedMB = source["MemoryUsedMB"];
+	        this.MemoryFreeMB = source["MemoryFreeMB"];
+	        this.MemoryUsedPercent = source["MemoryUsedPercent"];
+	        this.SwapTotalMB = source["SwapTotalMB"];
+	        this.SwapUsedMB = source["SwapUsedMB"];
+	        this.SwapFreeMB = source["SwapFreeMB"];
+	        this.StorageTotalMB = source["StorageTotalMB"];
+	        this.StorageUsedMB = source["StorageUsedMB"];
+	        this.StorageFreeMB = source["StorageFreeMB"];
+	        this.StorageUsedPercent = source["StorageUsedPercent"];
+	    }
+	}
 
 }
 

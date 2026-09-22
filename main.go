@@ -19,6 +19,7 @@ func main() {
 	app := NewApp()
 	dockerCommandBindings := &bindings.DockerCommandBindings{}
 	hostBindings := &bindings.HostBindings{}
+	hostStatsBindings := &bindings.HostStatsBindings{}
 
 	// Create application with options
 	err := wails.Run(&options.App{
@@ -41,6 +42,7 @@ func main() {
 			app,
 			dockerCommandBindings,
 			hostBindings,
+			hostStatsBindings,
 		},
 	})
 

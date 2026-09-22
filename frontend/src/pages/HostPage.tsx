@@ -1,11 +1,12 @@
 import { memo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Activity, CircleDot, CirclePause, Layers, Server, Zap } from 'lucide-react';
+import { Activity, CircleDot, CirclePause, Cpu, Layers, MemoryStick, Server } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { selectHostContainersStatus, selectProjectGroups, type ProjectGroup } from '@/store/selectors';
+import { selectHostContainersStatus, selectHostStats, selectProjectGroups, type ProjectGroup } from '@/store/selectors';
 import { fetchContainers } from '@/store/containersSlice';
 import BackButton from '@/components/BackButton';
 import ErrorState from '@/components/ErrorState';
+import UsageMeter from '@/components/UsageMeter';
 import {
   Card,
   CardHeader,
@@ -57,6 +58,7 @@ export default function HostPage() {
   const dispatch = useAppDispatch();
   const projectGroups = useAppSelector((state) => selectProjectGroups(state, resolvedHostId));
   const status = useAppSelector((state) => selectHostContainersStatus(state, resolvedHostId));
+  const stats = useAppSelector((state) => selectHostStats(state, resolvedHostId));
 
   const handleNavigate = (projectId: string) =>
     navigate(`/${hostId}/containers?projectId=${encodeURIComponent(projectId)}`);
@@ -71,7 +73,7 @@ export default function HostPage() {
         </div>
       </div>
 
-      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-xl border border-border bg-card/80 p-5 shadow-2xl shadow-black/10">
           <div className="mb-6 flex items-center justify-between text-muted-foreground"><span className="text-xs">Projects</span><Layers className="size-4 text-primary" /></div>
           <p className="text-3xl font-semibold">{projectGroups.length}</p><p className="mt-1 text-xs text-muted-foreground">Tracked workspaces</p>
@@ -81,8 +83,26 @@ export default function HostPage() {
           <p className="text-3xl font-semibold">{projectGroups.reduce((total, group) => total + group.runningCount, 0)}</p><p className="mt-1 text-xs text-muted-foreground">Healthy workloads</p>
         </div>
         <div className="rounded-xl border border-border bg-card/80 p-5 shadow-2xl shadow-black/10">
-          <div className="mb-6 flex items-center justify-between text-muted-foreground"><span className="text-xs">Host status</span><Zap className="size-4 text-amber-300" /></div>
-          <p className="text-3xl font-semibold">Ready</p><p className="mt-1 text-xs text-muted-foreground">{hostId} connected</p>
+          <div className="mb-6 flex items-center justify-between text-muted-foreground"><span className="text-xs">CPU usage</span><Cpu className="size-4 text-primary" /></div>
+          {stats ? (
+            <UsageMeter
+              label={`${stats.CPUCoreCount} cores`}
+              percent={stats.CPUUsagePercent}
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground">Waiting for stats…</p>
+          )}
+        </div>
+        <div className="rounded-xl border border-border bg-card/80 p-5 shadow-2xl shadow-black/10">
+          <div className="mb-6 flex items-center justify-between text-muted-foreground"><span className="text-xs">Memory usage</span><MemoryStick className="size-4 text-primary" /></div>
+          {stats ? (
+            <UsageMeter
+              label={`${(stats.MemoryUsedMB / 1024).toFixed(1)} / ${(stats.MemoryTotalMB / 1024).toFixed(1)} GB`}
+              percent={stats.MemoryUsedPercent}
+            />
+          ) : (
+            <p className="text-sm text-muted-foreground">Waiting for stats…</p>
+          )}
         </div>
       </div>
 

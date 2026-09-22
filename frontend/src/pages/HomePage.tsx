@@ -3,10 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import { CircleDot, CirclePause, FolderOpen, Plus, Server } from 'lucide-react';
 import { SelectPrivateKeyFile } from '../../wailsjs/go/main/App';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { selectAllHosts, selectHostSummary, selectHostsStatus } from '@/store/selectors';
+import {
+  selectAllHosts,
+  selectHostStats,
+  selectHostStatsHistory,
+  selectHostSummary,
+  selectHostsStatus,
+} from '@/store/selectors';
 import { addHost, fetchHosts } from '@/store/hostsSlice';
 import { fetchContainers } from '@/store/containersSlice';
 import ErrorState from '@/components/ErrorState';
+import UsageGraph from '@/components/UsageGraph';
 import {
   Card,
   CardHeader,
@@ -34,6 +41,8 @@ type HostCardProps = {
 
 const HostCard = memo(function HostCard({ host, onClick }: HostCardProps) {
   const summary = useAppSelector((state) => selectHostSummary(state, host.ID));
+  const stats = useAppSelector((state) => selectHostStats(state, host.ID));
+  const history = useAppSelector((state) => selectHostStatsHistory(state, host.ID));
 
   return (
     <Card
@@ -60,6 +69,17 @@ const HostCard = memo(function HostCard({ host, onClick }: HostCardProps) {
             <span>{summary.total - summary.running} stopped</span>
           </div>
         </div>
+        {stats && (
+          <div className="mt-3 grid grid-cols-2 gap-4">
+            <UsageGraph label="CPU" percent={stats.CPUUsagePercent} history={history.cpu} colorClass="text-chart-1" />
+            <UsageGraph
+              label="Memory"
+              percent={stats.MemoryUsedPercent}
+              history={history.memory}
+              colorClass="text-chart-2"
+            />
+          </div>
+        )}
       </CardContent>
     </Card>
   );
