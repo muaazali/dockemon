@@ -33,8 +33,8 @@ export default function AppSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <div className="mb-7 flex items-center gap-3 px-2 pt-2">
-            <div className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground shadow-lg shadow-primary/25">
-              <DockemonLogo className="size-7" />
+            <div className="grid size-8 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25">
+              <DockemonLogo className="size-5" />
             </div>
             <p className="text-base font-semibold tracking-tight text-sidebar-foreground">Dockemon</p>
           </div>

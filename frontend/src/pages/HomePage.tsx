@@ -1,6 +1,7 @@
 import { memo, useEffect, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CircleDot, CirclePause, Plus, Server } from 'lucide-react';
+import { CircleDot, CirclePause, FolderOpen, Plus, Server } from 'lucide-react';
+import { SelectPrivateKeyFile } from '../../wailsjs/go/main/App';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { selectAllHosts, selectHostSummary, selectHostsStatus } from '@/store/selectors';
 import { addHost, fetchHosts } from '@/store/hostsSlice';
@@ -94,7 +95,7 @@ function AddHostForm({ onDone }: { onDone: () => void }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-4 overflow-auto px-4">
+    <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-4 overflow-auto overscroll-contain px-4">
       <div className="flex flex-col gap-1.5">
         <label className="text-xs font-medium text-muted-foreground" htmlFor="host-id">Host ID</label>
         <Input id="host-id" required value={form.id} onChange={(e) => setForm({ ...form, id: e.target.value })} placeholder="prod-server" />
@@ -117,7 +118,31 @@ function AddHostForm({ onDone }: { onDone: () => void }) {
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-xs font-medium text-muted-foreground" htmlFor="host-key">Private key path</label>
-        <Input id="host-key" required value={form.privateKeyPath} onChange={(e) => setForm({ ...form, privateKeyPath: e.target.value })} placeholder="~/.ssh/id_rsa" />
+        <div className="flex gap-2">
+          <Input
+            id="host-key"
+            required
+            value={form.privateKeyPath}
+            onChange={(e) => setForm({ ...form, privateKeyPath: e.target.value })}
+            placeholder="~/.ssh/id_rsa"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            aria-label="Browse for private key file"
+            onClick={async () => {
+              try {
+                const path = await SelectPrivateKeyFile();
+                if (path) setForm((prev) => ({ ...prev, privateKeyPath: path }));
+              } catch (error) {
+                console.error('Failed to open file picker', error);
+              }
+            }}
+          >
+            <FolderOpen className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
       <SheetFooter>
         <Button type="submit">Save host</Button>

@@ -90,13 +90,19 @@
   html {
     @apply font-sans h-full;
     background: transparent;
+    overflow: hidden;
+    overscroll-behavior: none;
     }
   body {
     @apply bg-background text-foreground h-full antialiased;
     background-color: oklch(0 0 0 / 0.4);
+    overflow: hidden;
+    overscroll-behavior: none;
     }
   #root {
     @apply h-full flex;
     background: transparent;
+    overflow: hidden;
+    overscroll-behavior: none;
     }
 }

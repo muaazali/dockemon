@@ -19,7 +19,7 @@ function App() {
             <TitleBar />
             <div className="flex min-h-0 flex-1 gap-0.5 overflow-hidden p-1.5">
               <AppSidebar />
-              <main className="min-h-0 flex-1 overflow-auto">
+              <main className="min-h-0 flex-1 overflow-auto overscroll-contain">
                 <Routes>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/:hostId/" element={<HostPage />} />
